@@ -50,10 +50,10 @@ public class GraphicEditorPane extends JPanel implements KeyTracker {
 	public static final double SCALE_MIN = -3;
 	public static final double SCALE_MAX = 3;
 	public static final double PAN_RATE = 32;
-	public static final double ANCHORX_MAX = BOUNDX * 3;
-	public static final double ANCHORY_MAX = BOUNDY * 3;
 	public static final int BOUNDX = 1286;
 	public static final int BOUNDY = 725;
+	public static final double ANCHORX_MAX = BOUNDX * 3;
+	public static final double ANCHORY_MAX = BOUNDY * 3;
 	
 	/**
 	 * Which keys are held down
