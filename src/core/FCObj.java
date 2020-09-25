@@ -148,13 +148,15 @@ public class FCObj {
 		addAlias("GoalArea","GA","Goal");
 		addAlias("StaticRect","SR");
 		addAlias("StaticCircle","SC");
+		addAlias("DynamicRect","DR");
+		addAlias("DynamicCircle","DC");
 		addAlias("GoalRect","GR");
-		addAlias("GoalCircle","GC","GP","UG");
+		addAlias("GoalCircle","GC","GP","GB","UG","UGC");
 		addAlias("UnpowWheel","UW","Unpowered");
-		addAlias("CWWheel","WW","Clockwise");
-		addAlias("CCWWheel","CW","Counterclockwise");
-		addAlias("CWGoalCircle","WG");
-		addAlias("CCWGoalCircle","CG");
+		addAlias("CWWheel","WW","CWW","Clockwise");
+		addAlias("CCWWheel","CW","CCWW","Counterclockwise");
+		addAlias("CWGoalCircle","WG","WGC","CWGC");
+		addAlias("CCWGoalCircle","CG","CGC","CCWGC");
 		addAlias("WaterRod","BR","Water");
 		addAlias("WoodRod","WR","Wood");
 	}
