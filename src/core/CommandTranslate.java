@@ -57,8 +57,9 @@ public class CommandTranslate implements ActiveCommand{
 			final double r = Math.toRadians(view.objSel.get(0).r),
 					cr = Math.cos(r),
 					sr = Math.sin(r);
-			wdx = wdx*cr;
-			wdy = wdx*sr;
+			double wdl = wdx;
+			wdx = wdl*cr;
+			wdy = wdl*sr;
 			break;
 		}
 		case 2:{
@@ -69,8 +70,9 @@ public class CommandTranslate implements ActiveCommand{
 			final double r = Math.toRadians(view.objSel.get(0).r),
 					cr = Math.cos(r),
 					sr = Math.sin(r);
-			wdy = wdy*cr;
-			wdx = -wdy*sr;
+			double wdl = wdy;
+			wdy = wdl*cr;
+			wdx = -wdl*sr;
 			break;
 		}
 		case -2:{
