@@ -56,7 +56,7 @@ public class Main {
 	/**
 	 * Undo manager object which tracks changes and handles undo/redo
 	 */
-	public static TimedUndoManager textUndo;
+	public static TimedUndoManagerV2 textUndo;
 	/**
 	 * Editor internal document
 	 */
@@ -88,7 +88,7 @@ public class Main {
 		textSel = textEditor.getSelectedText();
 		objDoc = new ArrayList<>();
 		objSel = new ArrayList<>();
-		textUndo = new TimedUndoManager();
+		textUndo = new TimedUndoManagerV2();
 		// Do layout
 		textEditorScroll.setViewportView(textEditor);
 		splitPane.add(graphicEditor);
@@ -98,7 +98,6 @@ public class Main {
 		graphicEditor.objDoc = objDoc;
 		graphicEditor.objSel = objSel;
 		graphicEditor.setBackupSel();
-		textUndo.setLimit(100000);
 		textDoc.addUndoableEditListener(textUndo);
 		addListeners();
 		graphicEditor.init();
@@ -285,8 +284,10 @@ public class Main {
 	}
 	
 	public static void updateTextFromObj(){
+		textUndo.induceGap();
 		updateTextDocumentFromObj();
 		updateTextSelectionFromObj();
+		textUndo.induceGap();
 	}
 	
 	public static void updateTextDocumentFromObj(){
@@ -346,15 +347,11 @@ public class Main {
 	}
 	
 	public static void tryUndo(){
-		if(textUndo.canUndo()){
-			textUndo.undo();
-		}
+		textUndo.tryUndo();
 	}
 	
 	public static void tryRedo(){
-		if(textUndo.canRedo()){
-			textUndo.redo();
-		}
+		textUndo.tryRedo();
 	}
 	
 	public static void addUndoTracker(JComponent comp){
