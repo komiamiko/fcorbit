@@ -1,13 +1,9 @@
 package core;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.color.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.undo.*;
+import java.util.BitSet;
+
+import javax.swing.JTextArea;
+import javax.swing.text.Document;
 
 /**
  * The text editor component
@@ -16,12 +12,14 @@ import javax.swing.undo.*;
  * @version 1.0
  */
 public class TextEditorPane extends JTextArea implements KeyTracker {
+	private static final long serialVersionUID = -6486247017222620294L;
 	
 	/**
 	 * Which keys are held down
 	 */
 	public final BitSet keys = new BitSet();
 	
+	@Override
 	public BitSet getKeys(){
 		return keys;
 	}
@@ -56,6 +54,7 @@ public class TextEditorPane extends JTextArea implements KeyTracker {
 		
 	}
 	
+	@Override
 	public void forget(){
 		keys.clear();
 	}

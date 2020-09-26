@@ -1,14 +1,22 @@
 package core;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.color.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.undo.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.LayoutManager;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Comparator;
+import java.util.HashMap;
+
+import javax.swing.JPanel;
 
 /**
  * The graphical editor component
@@ -17,6 +25,7 @@ import javax.swing.undo.*;
  * @version 1.0
  */
 public class GraphicEditorPane extends JPanel implements KeyTracker {
+	private static final long serialVersionUID = -3379925414197739063L;
 	
 	public static final double ROUND_RADIUS = 2;
 	public static final double JOINT_RADIUS_OUTER = 4;
@@ -119,6 +128,7 @@ public class GraphicEditorPane extends JPanel implements KeyTracker {
 	
 	public ActiveCommand command = new CommandNone(this);
 	
+	@Override
 	public BitSet getKeys(){
 		return keys;
 	}
@@ -448,6 +458,7 @@ public class GraphicEditorPane extends JPanel implements KeyTracker {
 		}
 	}
 	
+	@Override
 	public void forget(){
 		cancelCommand();
 		keys.clear();

@@ -1,6 +1,6 @@
 package core;
 
-import java.util.*;
+import java.util.Objects;
 
 /**
  * For when you want to return multiple different values in a less awkward way
@@ -50,14 +50,17 @@ public class Any {
 			this.b = b;
 		}
 		
+		@Override
 		public String toString(){
 			return "("+a+", "+b+")";
 		}
 		
+		@Override
 		public int hashCode(){
 			return Objects.hash(a,b);
 		}
 		
+		@Override
 		public boolean equals(Object o){
 			if(this==o)return true;
 			if(o==null)return false;
@@ -98,14 +101,17 @@ public class Any {
 			this.value=value;
 		}
 		
+		@Override
 		public String toString(){
 			return "("+key+":"+value+")";
 		}
 		
+		@Override
 		public int hashCode(){
 			return Objects.hashCode(key);
 		}
 		
+		@Override
 		public boolean equals(Object o){
 			if(this==o)return true;
 			if(o==null)return false;
@@ -152,14 +158,17 @@ public class Any {
 			this.c = c;
 		}
 		
+		@Override
 		public String toString(){
 			return "("+a+", "+b+", "+c+")";
 		}
 		
+		@Override
 		public int hashCode(){
 			return Objects.hash(a,b,c);
 		}
 		
+		@Override
 		public boolean equals(Object o){
 			if(this==o)return true;
 			if(o==null)return false;

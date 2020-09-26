@@ -1,6 +1,7 @@
 package core;
 
 import java.util.ArrayDeque;
+
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.CannotRedoException;

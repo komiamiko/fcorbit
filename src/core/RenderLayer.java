@@ -1,8 +1,8 @@
 package core;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.image.*;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 
 public class RenderLayer {
 	

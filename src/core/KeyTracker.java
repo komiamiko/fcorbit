@@ -1,6 +1,6 @@
 package core;
 
-import java.util.*;
+import java.util.BitSet;
 
 /**
  * Component that tracks for itself which keys are pressed

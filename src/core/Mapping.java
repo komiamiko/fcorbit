@@ -1,6 +1,7 @@
 package core;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 /**
  * A functional interface for mapping a value of one type to

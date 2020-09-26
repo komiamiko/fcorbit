@@ -1,6 +1,9 @@
 package core;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Represents a game object
@@ -263,6 +266,7 @@ public class FCObj {
 		joints.addAll(source.joints);
 	}
 	
+	@Override
 	public boolean equals(Object o){
 		if(o==null)return false;
 		if(o==this)return true;
@@ -276,6 +280,7 @@ public class FCObj {
 				&&Floats.isNearMod(r, fo.r, 180);
 	}
 	
+	@Override
 	public int hashCode(){
 		final long p=0x2f107d62abd44853L;
 		long r=p;
@@ -288,6 +293,7 @@ public class FCObj {
 		return Long.hashCode(r);
 	}
 	
+	@Override
 	public String toString(){
 		return toString("fcml");
 	}

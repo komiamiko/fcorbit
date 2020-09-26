@@ -1,16 +1,30 @@
 package core;
 
-import java.util.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.awt.*;
-import java.awt.color.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import javax.swing.undo.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.TimerTask;
+
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.WindowConstants;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 
 /**
  * The main class
@@ -103,7 +117,7 @@ public class Main {
 		graphicEditor.init();
 		textEditor.init();
 		// Finalize and show
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setResizable(true);
 		frame.pack();
 		frame.setVisible(true);
@@ -474,63 +488,11 @@ public class Main {
 	 */
 	public static void runAfterDelay(long ms,Runnable r){
 		new java.util.Timer().schedule(new TimerTask(){
+			@Override
 			public void run(){
 				r.run();
 			}
 		}, ms);
-	}
-	
-	public static boolean setField(Object targetObject, String fieldName, Object fieldValue) {
-	    Field field;
-	    try {
-	        field = targetObject.getClass().getDeclaredField(fieldName);
-	    } catch (NoSuchFieldException e) {
-	        field = null;
-	    }
-	    Class superClass = targetObject.getClass().getSuperclass();
-	    while (field == null && superClass != null) {
-	        try {
-	            field = superClass.getDeclaredField(fieldName);
-	        } catch (NoSuchFieldException e) {
-	            superClass = superClass.getSuperclass();
-	        }
-	    }
-	    if (field == null) {
-	        return false;
-	    }
-	    field.setAccessible(true);
-	    try {
-	        field.set(targetObject, fieldValue);
-	        return true;
-	    } catch (IllegalAccessException e) {
-	        return false;
-	    }
-	}
-	
-	public static Object getField(Object targetObject, String fieldName){
-		Field field;
-	    try {
-	        field = targetObject.getClass().getDeclaredField(fieldName);
-	    } catch (NoSuchFieldException e) {
-	        field = null;
-	    }
-	    Class superClass = targetObject.getClass().getSuperclass();
-	    while (field == null && superClass != null) {
-	        try {
-	            field = superClass.getDeclaredField(fieldName);
-	        } catch (NoSuchFieldException e) {
-	            superClass = superClass.getSuperclass();
-	        }
-	    }
-	    if (field == null) {
-	        return null;
-	    }
-	    field.setAccessible(true);
-	    try {
-	        return field.get(targetObject);
-	    } catch (IllegalAccessException e) {
-	        return null;
-	    }
 	}
 
 }

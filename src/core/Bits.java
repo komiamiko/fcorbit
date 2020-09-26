@@ -1,6 +1,7 @@
 package core;
 
-import java.util.*;
+import java.util.BitSet;
+import java.util.Random;
 
 /**
  * Utility class containing all bit twiddling hacks and the like

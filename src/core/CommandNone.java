@@ -1,11 +1,13 @@
 package core;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-
-import core.GraphicEditorPane.*;
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Not a real command, this goes in when there's no command active
