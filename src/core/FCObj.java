@@ -284,7 +284,7 @@ public class FCObj {
 		r=r*p+(Double.doubleToLongBits(y)>>>32);
 		r=r*p+(Double.doubleToLongBits(w)>>>32);
 		r=r*p+(Double.doubleToLongBits(h)>>>32);
-		r=r*p+Math.floorMod(Math.round(r), 180);
+		r=r*p+Math.floorMod(Math.round(this.r), 180);
 		return Long.hashCode(r);
 	}
 	
