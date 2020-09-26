@@ -1,4 +1,4 @@
-package core;
+package com.komiamiko.fcorbit;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -33,11 +33,6 @@ import javax.swing.text.PlainDocument;
  * @version 1.0
  */
 public class Main {
-	
-	/**
-	 * How long to wait until the user is considered idle
-	 */
-	public static final long IDLE_MS = 100;
 	
 	/**
 	 * Main window

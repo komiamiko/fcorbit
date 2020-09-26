@@ -1,4 +1,4 @@
-package core;
+package com.komiamiko.fcorbit;
 
 /**
  * Some generic floating point utilities

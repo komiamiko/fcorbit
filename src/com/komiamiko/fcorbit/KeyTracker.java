@@ -1,4 +1,4 @@
-package core;
+package com.komiamiko.fcorbit;
 
 import java.util.BitSet;
 
