@@ -1,6 +1,9 @@
 package com.komiamiko.fcorbit;
 
+import java.util.Date;
+import java.util.Iterator;
 import java.util.ArrayDeque;
+import java.util.Collection;
 
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -277,6 +280,50 @@ public class TimedUndoManagerV2 implements UndoableEditListener {
 		// handle the leftover one
 		current.redo();
 		past.addLast(current);
+	}
+	
+	/**
+	 * Count the number of high level groups in this timeline.
+	 * Also equal to the number of undos or redos needed to cross this timeline.
+	 * 
+	 * @return number of high level groups
+	 */
+	public int countChunks(Collection<TimedEdit> coll) {
+		// empty timeline means no groups
+		if(coll.isEmpty())return 0;
+		// then, there is at least 1 group
+		// get the iterator
+		Iterator<TimedEdit> iter = coll.iterator();
+		// initialize the counter
+		int result = 1;
+		// iterate and count the number of stops
+		TimedEdit current = iter.next();
+		TimedEdit next;
+		// as long as there is a next item
+		while(iter.hasNext()) {
+			next = iter.next();
+			// increment count if the gap is large enough
+			if(next.time - current.time >= inactivityMs) {
+				result++;
+			}
+			// update current before we move on
+			current = next;
+		}
+		return result;
+	}
+	
+	/**
+	 * Collect and print various debug information to the console area.
+	 */
+	public void debugReport() {
+		System.out.println(new Date());
+		System.out.println("Undo manager");
+		System.out.println("* Past");
+		System.out.println("    + Entries (low level) = " + past.size());
+		System.out.println("    + Entries (user) = " + countChunks(past));
+		System.out.println("* Future");
+		System.out.println("    + Entries (low level) = " + future.size());
+		System.out.println("    + Entries (user) = " + countChunks(future));
 	}
 	
 	/**
