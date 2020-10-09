@@ -61,11 +61,6 @@ public class TimedUndoManagerV2 implements UndoableEditListener {
 	 * it won't happen.
 	 */
 	public static final int TRIM_STOP = 50;
-	/**
-	 * Some preliminary research shows the average length of a FCML line
-	 * is about 62 characters.
-	 */
-	public static final int AVERAGE_LINE_LENGTH = 62;
 	
 	/**
 	 * In milliseconds, how long to wait to register an edit.
@@ -77,9 +72,17 @@ public class TimedUndoManagerV2 implements UndoableEditListener {
 	 * Low-level limit for number of past edits to retain.
 	 * These edits are numerous - generally one per character typed.
 	 * <br/>
-	 * The average length of a line is {@link #AVERAGE_LINE_LENGTH},
-	 * and users want the high-level limit to be 500.
-	 * Hence, the default limit.
+	 * The default is 5000. This is a compromise between being light on
+	 * memory usage and not inconveniencing users by not having enough undo history.
+	 * <br/>
+	 * Based on some real usage statistics, a high level edit is,
+	 * on average, 3 to 4 low-level edits long. Based on this, the default
+	 * of 5000 entries will enable a past with 1400 edits, which is
+	 * more than enough for normal use.
+	 * <br/>
+	 * Also, the average length of a FCML line with all proper formatting
+	 * is 62, so if all you did was type full lines like that, the history
+	 * would appear to be 80 long, which is still quite good.
 	 */
 	public int pastLimit;
 	/**
@@ -111,7 +114,7 @@ public class TimedUndoManagerV2 implements UndoableEditListener {
 	 */
 	public TimedUndoManagerV2() {
 		inactivityMs = 1000;
-		pastLimit = AVERAGE_LINE_LENGTH * 500;
+		pastLimit = 5000;
 		lastEditTime = System.currentTimeMillis();
 		timeOffset = -lastEditTime;
 		past = new ArrayDeque<>();
