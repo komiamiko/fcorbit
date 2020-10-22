@@ -8,6 +8,8 @@ import java.awt.geom.AffineTransform;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 
+import com.komiamiko.fcorbit.document.FCObj;
+
 /**
  * 
  * 

@@ -18,6 +18,8 @@ import java.util.HashMap;
 
 import javax.swing.JPanel;
 
+import com.komiamiko.fcorbit.document.FCObj;
+
 /**
  * The graphical editor component
  * 

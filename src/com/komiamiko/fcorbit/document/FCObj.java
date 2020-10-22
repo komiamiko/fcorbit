@@ -5,6 +5,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Objects;
 
+import com.komiamiko.fcorbit.Bits;
+import com.komiamiko.fcorbit.Floats;
+
 /**
  * Represents a game object
  * <br>

@@ -26,6 +26,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
+import com.komiamiko.fcorbit.document.FCObj;
+
 /**
  * The main class
  * 

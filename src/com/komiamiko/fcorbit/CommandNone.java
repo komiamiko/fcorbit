@@ -9,6 +9,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import com.komiamiko.fcorbit.document.FCObj;
+
 /**
  * Not a real command, this goes in when there's no command active
  * 
