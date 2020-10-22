@@ -35,6 +35,11 @@ import javax.swing.text.PlainDocument;
 public class Main {
 	
 	/**
+	 * Minimum number of pixels movement to register a mouse drag
+	 */
+	public static final int MOUSE_DRAG_MIN_PIXELS = 4;
+	
+	/**
 	 * Main window
 	 */
 	public static JFrame frame;
@@ -207,7 +212,11 @@ public class Main {
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				graphicEditor.mouseDragged = true;
+				if(!graphicEditor.mouseDragged && Math.hypot(
+						e.getX() - graphicEditor.originMousex,
+						e.getY() - graphicEditor.originMousey) >= MOUSE_DRAG_MIN_PIXELS) {
+					graphicEditor.mouseDragged = true;
+				}
 				graphicEditor.command.mouseDragged(e);
 				graphicEditor.lastMousex = e.getX();
 				graphicEditor.lastMousey = e.getY();
