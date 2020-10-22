@@ -1,4 +1,4 @@
-package com.komiamiko.fcorbit;
+package com.komiamiko.fcorbit.document;
 
 import java.util.ArrayList;
 import java.util.Comparator;
