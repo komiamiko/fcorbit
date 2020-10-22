@@ -253,12 +253,14 @@ public class Main {
 	
 	public static void parseTextTo(String source,ArrayList<FCObj> target,String format){
 		if(source==null)return;
+		int lineCounter = 0;
 		for(String line:source.split("\n")){
 			try{
-				target.add(new FCObj(line,format));
+				target.add(new FCObj(line,format,lineCounter));
 			}catch(Exception e){
 				
 			}
+			lineCounter++;
 		}
 	}
 	
@@ -303,14 +305,16 @@ public class Main {
 	
 	public static void updateTextDocumentFromObj(){
 		StringBuilder sb = new StringBuilder();
+		int lineCounter = 0;
 		for(String line:textEditor.getText().split("\n")){
 			try{
 				// Dummy object
-				new FCObj(line,"fcml");
+				new FCObj(line,"fcml",lineCounter);
 			}catch(Exception e){
 				sb.append(line);
 				sb.append('\n');
 			}
+			lineCounter++;
 		}
 		for(FCObj obj:objDoc){
 			sb.append(obj.toString("fcml"));
@@ -332,9 +336,10 @@ public class Main {
 			int first = 0;
 			boolean chain = false;
 			int pos = 0;
+			int lineCounter = 0;
 			for(String line:textEditor.getText().split("\n")){
 				try{
-					FCObj other = new FCObj(line,"fcml");
+					FCObj other = new FCObj(line,"fcml",lineCounter);
 					if(ref.equals(other)){
 						if(!chain)first = pos;
 						chain = true;
@@ -351,6 +356,7 @@ public class Main {
 					
 				}
 				pos += line.length()+1;
+				lineCounter++;
 			}
 		}
 		ticker++;

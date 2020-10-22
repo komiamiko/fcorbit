@@ -16,7 +16,7 @@ import com.komiamiko.fcorbit.Floats;
  * @author EPICI
  * @version 1.0
  */
-public class FCObj {
+public class FCObj implements FCDocumentLine {
 	
 	/**
 	 * Comparator using the object z value, useful for sorting
@@ -189,6 +189,14 @@ public class FCObj {
 	 * If another object's z value is in this list, then they are connected
 	 */
 	public ArrayList<Integer> joints = new ArrayList<>();
+	/**
+	 * Line number, as retrieved by {@link #getLineNumber()}
+	 */
+	protected int line;
+	/**
+	 * Sub-line number, as retrieved by {@link #getSubLineNumber()}
+	 */
+	protected int subline;
 	
 	/**
 	 * Default constructor, does nothing
@@ -211,8 +219,9 @@ public class FCObj {
 	 * 
 	 * @param text text containing a single FC object
 	 * @param format string to indicate the format used
+	 * @param lineNumber the line number
 	 */
-	public FCObj(String text,String format){
+	public FCObj(String text,String format,int lineNumber){
 		switch(format){
 		case "fcml":{
 			String[] tokens = text.split("[\\s(),\\[\\]]+");
@@ -249,6 +258,7 @@ public class FCObj {
 			throw new IllegalArgumentException("FC object format \""+format+"\" not known");
 		}
 		}
+		setLineNumber(lineNumber, 0);
 	}
 	
 	/**
@@ -267,6 +277,8 @@ public class FCObj {
 		r=source.r;
 		joints.clear();
 		joints.addAll(source.joints);
+		line = source.getLineNumber();
+		subline = source.getSubLineNumber();
 	}
 	
 	@Override
@@ -516,6 +528,19 @@ public class FCObj {
 			}
 		}
 		return true;
+	}
+	@Override
+	public int getLineNumber() {
+		return line;
+	}
+	@Override
+	public int getSubLineNumber() {
+		return subline;
+	}
+	@Override
+	public void setLineNumber(int line, int subline) {
+		this.line = line;
+		this.subline = subline;
 	}
 	
 }
