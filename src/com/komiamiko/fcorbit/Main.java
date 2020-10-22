@@ -332,6 +332,7 @@ public class Main {
 	}
 	
 	public static void updateTextDocumentFromObj(){
+		fixLineNumbers(objDoc);
 		StringBuilder sb = new StringBuilder();
 		for(FCDocumentLine obj:objDoc){
 			sb.append(obj.toString());
