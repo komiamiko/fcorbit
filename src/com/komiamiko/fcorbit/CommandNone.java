@@ -62,13 +62,14 @@ public class CommandNone implements ActiveCommand{
 				ArrayList<FCObj> candidates = view.getSelectionArea(mx,my);
 				if(candidates.size()>0){// Something will be selected
 					for(FCObj obj:candidates){
+						int line = obj.getLineNumber();
 						// No shift -> select all
 						// Shift -> deselect all
-						boolean oc = view.objSel.contains(obj);
+						boolean oc = view.objSel.get(line);
 						if(!oc&&!shift){
-							view.objSel.add(obj);
+							view.objSel.set(line);
 						}else if(oc&&shift){
-							view.objSel.remove(obj);
+							view.objSel.clear(line);
 						}
 					}
 					Main.updateTextSelectionFromObj();
@@ -78,13 +79,14 @@ public class CommandNone implements ActiveCommand{
 				int mx = e.getX(), my = e.getY();
 				FCObj sel = view.getSelectionPoint(mx,my);
 				if(sel!=null){// Something will be selected
+					int line = sel.getLineNumber();
 					if(shift){
 						// Try to remove it, and if it wasn't removed, add it
-						if(!view.objSel.remove(sel))view.objSel.add(sel);
+						view.objSel.flip(line);
 					}else{
 						// Replace the current selection with the new one
 						view.objSel.clear();
-						view.objSel.add(sel);
+						view.objSel.set(line);
 					}
 					Main.updateTextSelectionFromObj();
 					view.repaint();
@@ -121,13 +123,14 @@ public class CommandNone implements ActiveCommand{
 			ArrayList<FCObj> candidates = view.getSelectionArea(mx,my);
 			if(candidates.size()>0){// Something will be selected
 				for(FCObj obj:candidates){
+					int line = obj.getLineNumber();
 					// No shift -> select all
 					// Shift -> deselect all
-					boolean oc = view.objSel.contains(obj);
+					boolean oc = view.objSel.get(line);
 					if(!oc&&!shift){
-						view.objSel.add(obj);
+						view.objSel.set(line);
 					}else if(oc&&shift){
-						view.objSel.remove(obj);
+						view.objSel.clear(line);
 					}
 				}
 			}
@@ -145,13 +148,14 @@ public class CommandNone implements ActiveCommand{
 		int mx = e.getX(), my = e.getY();
 		FCObj sel = view.getSelectionPoint(mx,my);
 		if(sel!=null){// Something will be selected
+			int line = sel.getLineNumber();
 			if(shift){
 				// Try to remove it, and if it wasn't removed, add it
-				if(!view.objSel.remove(sel))view.objSel.add(sel);
+				view.objSel.flip(line);
 			}else{
 				// Replace the current selection with the new one
 				view.objSel.clear();
-				view.objSel.add(sel);
+				view.objSel.set(line);
 			}
 		}
 		view.repaint();
@@ -206,14 +210,9 @@ public class CommandNone implements ActiveCommand{
 		switch(e.getKeyCode()){
 		case KeyEvent.VK_0:{
 			// 0 -> center the view
-			double tx=0,ty=0;
-			if(view.objSel.size()>0){// If object is selected, go to that object instead
-				FCObj obj = view.objSel.get(0);
-				tx=obj.x;
-				ty=obj.y;
-			}
-			view.anchorx=view.uanchorx=tx;
-			view.anchory=view.uanchory=ty;
+			double[] txy = view.getPivot();
+			view.anchorx=view.uanchorx=txy[0];
+			view.anchory=view.uanchory=txy[1];
 			view.repaint();
 			break;
 		}
@@ -244,8 +243,10 @@ public class CommandNone implements ActiveCommand{
 		case KeyEvent.VK_X:{
 			// Delete selection
 			view.restoreBackupSel();
-			if(view.objSel.size()>0){
-				view.objDoc.removeAll(new HashSet<>(view.objSel));
+			if(view.objSel.cardinality()>0){
+				for(int i = view.objSel.length(); (i = view.objSel.previousSetBit(i-1)) >= 0;) {
+					view.objDoc.remove(i);
+				}
 				view.objSel.clear();
 				Main.updateTextFromObj();
 				view.repaint();
@@ -254,7 +255,7 @@ public class CommandNone implements ActiveCommand{
 		}
 		case KeyEvent.VK_G:{
 			// Translate selection
-			if(view.objSel.size()>0){
+			if(view.objSel.cardinality()>0){
 				view.setCommand(new CommandTranslate(view));
 			}
 			break;
