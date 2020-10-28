@@ -5,8 +5,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+
+import com.komiamiko.fcorbit.document.FCObj;
 
 /**
  * 
@@ -19,7 +22,7 @@ public class CommandTranslate implements ActiveCommand{
 	public final GraphicEditorPane view;
 	
 	public boolean done = false;
-	public IdentityHashMap<FCObj,FCObj> backupDoc;
+	public FCObj[] backupDoc;
 	public int initialx;
 	public int initialy;
 	
@@ -35,15 +38,17 @@ public class CommandTranslate implements ActiveCommand{
 		this.view = view;
 		initialx = view.lastMousex;
 		initialy = view.lastMousey;
-		backupDoc = new IdentityHashMap<>();
-		for(FCObj obj:view.objSel){
-			backupDoc.put(obj, new FCObj(obj));
+		backupDoc = new FCObj[view.objSel.cardinality()];
+		for(int i = view.objSel.nextSetBit(0), j = 0; i >= 0; i = view.objSel.nextSetBit(i+1), ++j) {
+			FCObj obj = (FCObj)view.objDoc.get(i);
+			backupDoc[j] = new FCObj(obj);
 		}
 	}
 	
 	public void restoreBackupDoc(){
-		for(FCObj obj:view.objSel){
-			FCObj copy = backupDoc.get(obj);
+		for(int i = view.objSel.nextSetBit(0), j = 0; i >= 0; i = view.objSel.nextSetBit(i+1), ++j) {
+			FCObj copy = backupDoc[j];
+			FCObj obj = (FCObj)view.objDoc.get(i);
 			obj.copyFrom(copy);
 		}
 	}
@@ -57,7 +62,7 @@ public class CommandTranslate implements ActiveCommand{
 		double wdy = dy*invScale;
 		switch(direction){
 		case 1:{
-			final double r = Math.toRadians(view.objSel.get(0).r),
+			final double r = view.getPivot()[2],
 					cr = Math.cos(r),
 					sr = Math.sin(r);
 			double wdl = wdx;
@@ -70,7 +75,7 @@ public class CommandTranslate implements ActiveCommand{
 			break;
 		}
 		case -1:{
-			final double r = Math.toRadians(view.objSel.get(0).r),
+			final double r = view.getPivot()[2],
 					cr = Math.cos(r),
 					sr = Math.sin(r);
 			double wdl = wdy;
@@ -91,12 +96,10 @@ public class CommandTranslate implements ActiveCommand{
 		double[] wdxy = getTranslation(mx,my);
 		double wdx = wdxy[0];
 		double wdy = wdxy[1];
-		HashSet<FCObj> hashSel = new HashSet<>(view.objSel);
-		for(FCObj obj:view.objDoc){
-			if(hashSel.contains(obj)){
-				obj.x += wdx;
-				obj.y += wdy;
-			}
+		for(int i = view.objSel.nextSetBit(0), j = 0; i >= 0; i = view.objSel.nextSetBit(i+1), ++j) {
+			FCObj obj = (FCObj)view.objDoc.get(i);
+			obj.x += wdx;
+			obj.y += wdy;
 		}
 	}
 
@@ -116,9 +119,9 @@ public class CommandTranslate implements ActiveCommand{
 		g.translate(cx, cy);
 		g.scale(scale, scale);
 		g.translate(-view.anchorx, -view.anchory);
-		FCObj first = view.objSel.get(0);
-		double ox = first.x;
-		double oy = first.y;
+		double[] pivot = view.getPivot();
+		double ox = pivot[0];
+		double oy = pivot[1];
 		if(direction==0){
 			double[] wdxy = getTranslation(view.lastMousex,view.lastMousey);
 			double wdx = wdxy[0];
@@ -133,8 +136,7 @@ public class CommandTranslate implements ActiveCommand{
 					wdx=1;
 					wdy=0;
 				}else{
-					FCObj obj = view.objSel.get(0);
-					final double r = Math.toRadians(obj.r);
+					final double r = pivot[2];
 					wdx = Math.cos(r);
 					wdy = Math.sin(r);
 				}
@@ -144,13 +146,11 @@ public class CommandTranslate implements ActiveCommand{
 					wdx=0;
 					wdy=1;
 				}else{
-					FCObj obj = view.objSel.get(0);
-					final double r = Math.toRadians(obj.r);
+					final double r = pivot[2];
 					wdx = -Math.sin(r);
 					wdy = Math.cos(r);
 				}
 			}
-			Main.console.println(wdx+" "+wdy);
 			wdx*=RAYLENGTH;
 			wdy*=RAYLENGTH;
 			g.drawLine((int)(ox-wdx), (int)(oy-wdy), (int)(ox+wdx), (int)(oy+wdy));

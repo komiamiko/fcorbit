@@ -26,6 +26,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
+import com.komiamiko.fcorbit.document.CommentLine;
+import com.komiamiko.fcorbit.document.FCDocumentLine;
+import com.komiamiko.fcorbit.document.FCObj;
+
 /**
  * The main class
  * 
@@ -69,11 +73,11 @@ public class Main {
 	/**
 	 * Editor internal document
 	 */
-	public static ArrayList<FCObj> objDoc;
+	public static ArrayList<FCDocumentLine> objDoc;
 	/**
 	 * Editor internal selection
 	 */
-	public static ArrayList<FCObj> objSel;
+	public static BitSet objSel;
 	/**
 	 * Changes every update, used to track idling
 	 */
@@ -96,7 +100,7 @@ public class Main {
 		textEditor = new TextEditorPane(textDoc,"",150,150);
 		textSel = textEditor.getSelectedText();
 		objDoc = new ArrayList<>();
-		objSel = new ArrayList<>();
+		objSel = new BitSet();
 		textUndo = new TimedUndoManagerV2();
 		// Do layout
 		textEditorScroll.setViewportView(textEditor);
@@ -249,14 +253,16 @@ public class Main {
 		});
 	}
 	
-	public static void parseTextTo(String source,ArrayList<FCObj> target,String format){
+	public static void parseTextTo(String source,ArrayList<FCDocumentLine> target,String format){
 		if(source==null)return;
+		int lineCounter = 0;
 		for(String line:source.split("\n")){
 			try{
-				target.add(new FCObj(line,format));
+				target.add(new FCObj(line,format,lineCounter));
 			}catch(Exception e){
-				
+				target.add(new CommentLine(line,lineCounter));
 			}
+			lineCounter++;
 		}
 	}
 	
@@ -274,18 +280,44 @@ public class Main {
 	}
 	
 	public static void updateObjSelectionFromText(){
-		String text = textEditor.getSelectedText();
+		int tsStart = textEditor.getSelectionStart();
+		int tsStop = textEditor.getSelectionEnd();
 		objSel.clear();
-		parseTextTo(text,objSel,"fcml");
-		int sn = objSel.size();
-		// Ensure objects are same reference
-		HashMap<FCObj,FCObj> swap = new HashMap<>();
-		for(FCObj obj:objDoc){
-			swap.put(obj, obj);
-		}
-		for(int i=0;i<sn;i++){
-			FCObj obj = swap.get(objSel.get(i));
-			if(obj!=null)objSel.set(i, obj);
+		// empty case
+		if(tsStart < tsStop) {
+			String text = textEditor.getText();
+			int docLength = text.length();
+			// skip over whitespace, including empty lines
+			while(tsStart < tsStop && text.charAt(tsStart) <= ' ') {
+				tsStart++;
+			}
+			while(tsStart < tsStop && text.charAt(tsStop - 1) <= ' ') {
+				tsStop--;
+			}
+			// stop early if selection is empty
+			if(tsStart < tsStop) {
+				// count newlines in range
+				int nlLeft = 0, nlMid = 0;
+				for(int i = 0; i < tsStart; ++i) {
+					if(text.charAt(i) == '\n') {
+						nlLeft++;
+					}
+				}
+				for(int i = tsStart; i < tsStop; ++i) {
+					if(text.charAt(i) == '\n') {
+						nlMid++;
+					}
+				}
+				// determine start/stop of the selection
+				int selStart = nlLeft;
+				int selStop = nlLeft + nlMid + 1;
+				// set selection only for fc object lines
+				for(int i = selStart; i < selStop; ++i) {
+					if(objDoc.get(i) instanceof FCObj) {
+						objSel.set(i);
+					}
+				}
+			}
 		}
 		ticker++;
 		graphicEditor.setBackupSel();
@@ -300,18 +332,10 @@ public class Main {
 	}
 	
 	public static void updateTextDocumentFromObj(){
+		fixLineNumbers(objDoc);
 		StringBuilder sb = new StringBuilder();
-		for(String line:textEditor.getText().split("\n")){
-			try{
-				// Dummy object
-				new FCObj(line,"fcml");
-			}catch(Exception e){
-				sb.append(line);
-				sb.append('\n');
-			}
-		}
-		for(FCObj obj:objDoc){
-			sb.append(obj.toString("fcml"));
+		for(FCDocumentLine obj:objDoc){
+			sb.append(obj.toString());
 			sb.append('\n');
 		}
 		textEditor.setText(sb.toString());
@@ -321,38 +345,81 @@ public class Main {
 	
 	public static void updateTextSelectionFromObj(){
 		graphicEditor.setBackupSel();
-		int sn = objSel.size();
+		int sn = objSel.cardinality();
+		// check not empty
 		if(sn>0){
-			ArrayList<FCObj> sortedSel = new ArrayList<>(objSel);
-			Mapping.sort(sortedSel, (FCObj value)->objDoc.indexOf(value), Comparator.<Integer>naturalOrder());
-			int i = 0;
-			FCObj ref = sortedSel.get(i);
-			int first = 0;
-			boolean chain = false;
-			int pos = 0;
-			for(String line:textEditor.getText().split("\n")){
-				try{
-					FCObj other = new FCObj(line,"fcml");
-					if(ref.equals(other)){
-						if(!chain)first = pos;
-						chain = true;
-						i++;
-						if(i==sn){
-							textEditor.select(first, pos+line.length());
-							break;
-						}
-						ref = sortedSel.get(i);
-					}else if(chain){
-						break;
-					}
-				}catch(Exception e){
-					
+			// check contiguous
+			// if they are contiguous, it will look like
+			// 0 ... 0 1 ... 1 0 ... 0
+			// so the first 0 after the first 1 should be just after the last 1
+			final int firstSet = objSel.nextSetBit(0);
+			final int lastSet = objSel.previousSetBit(objSel.length());
+			final int nextClear = objSel.nextClearBit(firstSet);
+			if(nextClear == lastSet + 1) {
+				final int selStart = firstSet;
+				final int selStop = nextClear;
+				// calculate positions in text
+				int tsStart = selStart;
+				String[] lines = textEditor.getText().split("\n");
+				for(int i = 0; i < selStart; ++i) {
+					tsStart += lines[i].length();
 				}
-				pos += line.length()+1;
+				int tsStop = tsStart + selStop - selStart - 1;
+				for(int i = selStart; i < selStop; ++i) {
+					tsStop += lines[i].length();
+				}
+				// temporarily set start to 0 to prevent bounds issues
+				textEditor.setSelectionStart(0);
+				// set stop
+				textEditor.setSelectionEnd(tsStop);
+				// set start
+				textEditor.setSelectionStart(tsStart);
 			}
 		}
 		ticker++;
 		textEditor.repaint();
+	}
+	
+	/**
+	 * Normalize line numbers in-place
+	 * 
+	 * @see FCDocumentLine#getLineNumber()
+	 * 
+	 * @param target document as list of lines
+	 */
+	public static void fixLineNumbers(ArrayList<FCDocumentLine> target) {
+		int lineCounter = 0;
+		for(FCDocumentLine line:target) {
+			line.setLineNumber(lineCounter, 0);
+			lineCounter++;
+		}
+	}
+	
+	/**
+	 * Apply a change to the object document. This can be summarized in 4 steps:
+	 * <ol>
+	 * <li>Delete all objects in the original selection</li>
+	 * <li>Insert all new objects at the end</li>
+	 * <li>Sort by line/subline, which fixes the ordering</li>
+	 * <li>Normalize the line numbers using {@link #fixLineNumbers(ArrayList)}</li>
+	 * </ol>
+	 * Note that any selected and unchanged objects need to be explicitly re-included.
+	 * 
+	 * @param target document to modify
+	 * @param selection object selection
+	 * @param toAdd new objects to add
+	 */
+	public static void applyObjDocumentChange(ArrayList<FCDocumentLine> target, BitSet selection, ArrayList<FCDocumentLine> toAdd) {
+		// delete original selected objects
+		for(int i = selection.length(); (i = selection.previousSetBit(i-1)) >= 0;) {
+			target.remove(i);
+		}
+		// append new objects
+		target.addAll(toAdd);
+		// sort by line number
+		target.sort(FCDocumentLine.COMPARE_LINE_NUMBER);
+		// normalize line numbers
+		fixLineNumbers(target);
 	}
 	
 	public static void tryUndo(){

@@ -15,8 +15,12 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 
 import javax.swing.JPanel;
+
+import com.komiamiko.fcorbit.document.FCDocumentLine;
+import com.komiamiko.fcorbit.document.FCObj;
 
 /**
  * The graphical editor component
@@ -122,9 +126,9 @@ public class GraphicEditorPane extends JPanel implements KeyTracker {
 	 */
 	public boolean showGrid;
 	
-	public ArrayList<FCObj> objDoc;
-	public ArrayList<FCObj> objSel;
-	public ArrayList<FCObj> backupSel = new ArrayList<>();
+	public ArrayList<FCDocumentLine> objDoc;
+	public BitSet objSel;
+	public BitSet backupSel = new BitSet();
 	
 	public ActiveCommand command = new CommandNone(this);
 	
@@ -182,27 +186,24 @@ public class GraphicEditorPane extends JPanel implements KeyTracker {
 		overlays.translate(-anchorx, -anchory);
 		int leveln = -2;
 		// Sort objects
-		objDoc.sort(FCObj.Z_COMPARE);
-		// Grab selection
-		HashMap<FCObj,Integer> selectedIndex = new HashMap<>();
-		int i=0;
-		for(FCObj obj:objSel){
-			selectedIndex.put(obj, i);
-			i++;
+		ArrayList<FCObj> renderObjs = new ArrayList<>();
+		for(FCDocumentLine o:objDoc) {
+			if(o instanceof FCObj) {
+				renderObjs.add((FCObj)o);
+			}
 		}
+		renderObjs.sort(FCObj.Z_COMPARE);
 		// Background
 		g.setColor(BACKGROUND);
 		g.fillRect(0, 0, width, height);
 		// Iterate and draw onto layers
-		for(FCObj obj:objDoc){
+		for(FCObj obj:renderObjs){
 			if(tracker!=Main.ticker)break;
 			int z = obj.z;
 			double x = obj.x, y = obj.y, w = obj.w, h = obj.h, r = obj.r;
 			int typeData = obj.getTypeData();
-			Integer osel = selectedIndex.get(obj);
-			boolean isselected = osel!=null;
-			int sel = isselected?osel:-1;
-			boolean isselectedfirst = sel==0;
+			boolean isselected = objSel.get(obj.getLineNumber());
+			boolean isselectedfirst = false;
 			boolean isdesign = Bits.readBit(typeData, FCObj.TYPE_DESIGN);
 			boolean iscircle = Bits.readBit(typeData, FCObj.TYPE_CIRCLE);
 			boolean isgoal = Bits.readBit(typeData, FCObj.TYPE_GOAL);
@@ -540,9 +541,12 @@ public class GraphicEditorPane extends JPanel implements KeyTracker {
 	}
 	public FCObj getSelectionPointWorld(double wmx,double wmy){
 		ArrayList<FCObj> candidates = new ArrayList<>();
-		for(FCObj obj:objDoc){
-			if(obj.contains(wmx,wmy)){
-				candidates.add(obj);
+		for(FCDocumentLine line:objDoc){
+			if(line instanceof FCObj) {
+				FCObj obj = (FCObj)line;
+				if(obj.contains(wmx,wmy)){
+					candidates.add(obj);
+				}
 			}
 		}
 		if(candidates.isEmpty())return null;
@@ -582,22 +586,61 @@ public class GraphicEditorPane extends JPanel implements KeyTracker {
 		dummy.w = wmx-womx;
 		dummy.h = wmy-womy;
 		ArrayList<FCObj> candidates = new ArrayList<>();
-		for(FCObj obj:objDoc){
-			if(dummy.intersects(obj)){
-				candidates.add(obj);
+		for(FCDocumentLine line:objDoc){
+			if(line instanceof FCObj) {
+				FCObj obj = (FCObj)line;
+				if(dummy.intersects(obj)){
+					candidates.add(obj);
+				}
 			}
 		}
 		return candidates;
 	}
 	
+	/**
+	 * Get the current "pivot" point with orientation as an (X, Y, R) tuple.
+	 * Angle is in radians.
+	 * It is used in various operations:
+	 * <ul>
+	 * <li>Where the centre the view when the "center view" key is used</li>
+	 * <li>Origin/pivot point for rotation tool (future feature)</li>
+	 * <li>Origin/pivot point for scale tool (future feature)</li>
+	 * </ul>
+	 * As currently implemented, it is the world origin if there is no selection,
+	 * otherwise the unweighted median point of all selected objects.
+	 * Orientation will be the orientation of the selected object if there is exactly 1,
+	 * otherwise 0.
+	 * 
+	 * @return
+	 */
+	public double[] getPivot() {
+		int sn = objSel.cardinality();
+		if(sn == 0) {
+			return new double[] {0, 0, 0};
+		}
+		double rx = 0, ry = 0, rr = 0;
+		for(int i = objSel.nextSetBit(0); i >= 0; i = objSel.nextSetBit(i+1)) {
+			FCObj obj = (FCObj)objDoc.get(i);
+			rx += obj.x;
+			ry += obj.y;
+			if(sn == 1) {
+				rr = Math.toRadians(obj.r);
+			}
+		}
+		double mul = 1d / sn;
+		rx *= mul;
+		ry *= mul;
+		return new double[] {rx, ry, rr};
+	}
+	
 	public void setBackupSel(){
 		backupSel.clear();
-		backupSel.addAll(objSel);
+		backupSel.or(objSel);
 	}
 	
 	public void restoreBackupSel(){
 		objSel.clear();
-		objSel.addAll(backupSel);
+		objSel.or(backupSel);
 	}
 	
 	public void tryUndo(){
