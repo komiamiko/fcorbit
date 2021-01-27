@@ -70,9 +70,13 @@ Caveats:
 ## Viewport
 **Scroll** to zoom.
 
+**Middle click + drag** to move.
+
 **Shift + scroll** to move vertically.
+Useful if you don't have a mouse.
 
 **Alt + Shift + scroll** to move horizontally.
+Useful if you don't have a mouse.
 
 It is possible to pan to about 3 times the game's view bounds.
 
@@ -81,6 +85,8 @@ Hyper-thin wireframe using **Z** for high precision editing is planned for a fut
 
 **Shift + Z** to toggle an overlay for the game's view bounds. Anything outside this boundary will never be visible in-game.
 Toggle for legacy view bounds using **Shift + Z** is planned for a future update.
+
+**0** to center the view on the world origin. If an object is selected, centers on the selected object instead.
 
 ## Selection
 **Click** to select one object, replacing the current selection.
