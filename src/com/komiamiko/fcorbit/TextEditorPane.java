@@ -58,5 +58,32 @@ public class TextEditorPane extends JTextArea implements KeyTracker {
 	public void forget(){
 		keys.clear();
 	}
+	
+	@Override
+	public void setText(String newText) {
+		// short circuit on null or empty
+		final int newLength;
+		if (newText == null || (newLength = newText.length()) == 0) {
+			super.setText(newText);
+			return;
+		}
+		String oldText = this.getText();
+		final int oldLength = oldText.length();
+		// compute longest shared prefix
+		int prefix = 0;
+		int lim = Math.min(oldLength, newLength);
+		for(;prefix < lim && oldText.charAt(prefix)
+				== newText.charAt(prefix);++prefix);
+		// compute longest shared suffix
+		lim -= prefix;
+		int suffix = 0;
+		for(;suffix < lim && oldText.charAt(oldLength - 1 - suffix)
+				== newText.charAt(newLength - 1 - suffix);++suffix);
+		// replace the text inbetween
+		final int oldStart = prefix, oldStop = oldLength - suffix,
+				newStart = prefix, newStop = newLength - suffix;
+		String newSlice = newText.substring(newStart, newStop);
+		this.replaceRange(newSlice, oldStart, oldStop);
+	}
 
 }
