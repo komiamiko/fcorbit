@@ -556,5 +556,12 @@ public class Main {
 			}
 		}, ms);
 	}
+	
+	/**
+	 * Collect and print various debug information to the console area.
+	 */
+	public static void debugReport() {
+		textUndo.debugReport();
+	}
 
 }

@@ -260,6 +260,11 @@ public class CommandNone implements ActiveCommand{
 			}
 			break;
 		}
+		case KeyEvent.VK_I:{
+			if(ctrl&&alt) { // Debug report
+				Main.debugReport();
+			}
+		}
 		case KeyEvent.VK_SHIFT:{
 			view.repaint();
 			break;

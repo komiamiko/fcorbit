@@ -1,6 +1,9 @@
 package com.komiamiko.fcorbit;
 
+import java.util.Date;
+import java.util.Iterator;
 import java.util.ArrayDeque;
+import java.util.Collection;
 
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -58,11 +61,6 @@ public class TimedUndoManagerV2 implements UndoableEditListener {
 	 * it won't happen.
 	 */
 	public static final int TRIM_STOP = 50;
-	/**
-	 * Some preliminary research shows the average length of a FCML line
-	 * is about 62 characters.
-	 */
-	public static final int AVERAGE_LINE_LENGTH = 62;
 	
 	/**
 	 * In milliseconds, how long to wait to register an edit.
@@ -74,9 +72,17 @@ public class TimedUndoManagerV2 implements UndoableEditListener {
 	 * Low-level limit for number of past edits to retain.
 	 * These edits are numerous - generally one per character typed.
 	 * <br/>
-	 * The average length of a line is {@link #AVERAGE_LINE_LENGTH},
-	 * and users want the high-level limit to be 500.
-	 * Hence, the default limit.
+	 * The default is 5000. This is a compromise between being light on
+	 * memory usage and not inconveniencing users by not having enough undo history.
+	 * <br/>
+	 * Based on some real usage statistics, a high level edit is,
+	 * on average, 3 to 4 low-level edits long. Based on this, the default
+	 * of 5000 entries will enable a past with 1400 edits, which is
+	 * more than enough for normal use.
+	 * <br/>
+	 * Also, the average length of a FCML line with all proper formatting
+	 * is 62, so if all you did was type full lines like that, the history
+	 * would appear to be 80 long, which is still quite good.
 	 */
 	public int pastLimit;
 	/**
@@ -108,7 +114,7 @@ public class TimedUndoManagerV2 implements UndoableEditListener {
 	 */
 	public TimedUndoManagerV2() {
 		inactivityMs = 1000;
-		pastLimit = AVERAGE_LINE_LENGTH * 500;
+		pastLimit = 5000;
 		lastEditTime = System.currentTimeMillis();
 		timeOffset = -lastEditTime;
 		past = new ArrayDeque<>();
@@ -277,6 +283,50 @@ public class TimedUndoManagerV2 implements UndoableEditListener {
 		// handle the leftover one
 		current.redo();
 		past.addLast(current);
+	}
+	
+	/**
+	 * Count the number of high level groups in this timeline.
+	 * Also equal to the number of undos or redos needed to cross this timeline.
+	 * 
+	 * @return number of high level groups
+	 */
+	public int countChunks(Collection<TimedEdit> coll) {
+		// empty timeline means no groups
+		if(coll.isEmpty())return 0;
+		// then, there is at least 1 group
+		// get the iterator
+		Iterator<TimedEdit> iter = coll.iterator();
+		// initialize the counter
+		int result = 1;
+		// iterate and count the number of stops
+		TimedEdit current = iter.next();
+		TimedEdit next;
+		// as long as there is a next item
+		while(iter.hasNext()) {
+			next = iter.next();
+			// increment count if the gap is large enough
+			if(next.time - current.time >= inactivityMs) {
+				result++;
+			}
+			// update current before we move on
+			current = next;
+		}
+		return result;
+	}
+	
+	/**
+	 * Collect and print various debug information to the console area.
+	 */
+	public void debugReport() {
+		System.out.println(new Date());
+		System.out.println("Undo manager");
+		System.out.println("* Past");
+		System.out.println("    + Entries (low level) = " + past.size());
+		System.out.println("    + Entries (user) = " + countChunks(past));
+		System.out.println("* Future");
+		System.out.println("    + Entries (low level) = " + future.size());
+		System.out.println("    + Entries (user) = " + countChunks(future));
 	}
 	
 	/**
