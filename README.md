@@ -13,24 +13,6 @@ but it lacked nice features like copy paste or undo redo.
 FC Orbit is now maintained by [komiamiko](https://github.com/komiamiko), and aims to solve all these problems.
 Text editor and graphical editor side by side with real time updates and a large toolkit.
 
-# Build and run
-
-This project uses maven. (ever since the modernize update)
-
-Build:
-
-```sh
-mvn package
-```
-
-Run:
-
-```
-java -jar target/fcorbit*.jar
-```
-
-Or just open the jar directly. (double-click open)
-
 # FAQ
 ## Why can't I upload levels from within the editor?
 Not in this version, not in the near future, but it may come in a later update.
@@ -129,3 +111,26 @@ These also work in the text editor.
 
 ## Misc
 **Control + Alt + I** to print some debug info to standard output. This will likely be replaced in the future by a more user-friendly logging system.
+# For developers
+
+This project uses maven. (ever since the modernize update)
+
+## Build
+
+```sh
+mvn package
+```
+
+## Run
+
+```
+java -jar target/fcorbit*.jar
+```
+
+Or just open the jar directly. (double-click open)
+
+## Versioning
+
+We have auto version bump set up with GitHub Actions. Every PR will, by default, bump the patch version.
+
+You can override this with the `version:major` or `version:minor` labels on your PR.
