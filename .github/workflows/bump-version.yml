@@ -1,0 +1,65 @@
+# This workflow automates the version bumping for a Maven project.
+# It is triggered when a pull request is merged into the 'main' branch.
+# The version increment (major, minor, or patch) is determined by labels
+# on the merged pull request.
+
+name: Bump Maven Version on Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+jobs:
+  bump_version:
+    # This job will only run if the pull request was merged.
+    if: github.event.pull_request.merged == true
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to push the version change to the repository
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          # This is necessary to get the full git history for pushing
+          # changes, as well as to get the PR labels.
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '16'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Get PR labels to determine version increment
+        id: get_labels
+        run: |
+          # Check for 'version:major' or 'version:minor' labels.
+          # Default to 'patch' if no specific version label is found.
+          INCREMENT="patch"
+          if [[ "${{ github.event.pull_request.labels.*.name }}" =~ "version:major" ]]; then
+            INCREMENT="major"
+          elif [[ "${{ github.event.pull_request.labels.*.name }}" =~ "version:minor" ]]; then
+            INCREMENT="minor"
+          fi
+          echo "increment=$INCREMENT" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Bump Maven version
+        run: |
+          # Use the Maven Versions Plugin to increment the version based on the determined increment type.
+          mvn versions:set -DnewVersion=\${project.version}-${{ steps.get_labels.outputs.increment }} -DprocessAllModules -DgenerateBackupPoms=false
+
+      - name: Commit and push new version
+        run: |
+          # Configure Git and push the updated pom.xml file to the main branch.
+          # The `contents: write` permission is needed for this step.
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pom.xml
+          git commit -m "Bump version [skip ci]"
+          git push

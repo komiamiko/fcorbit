@@ -107,6 +107,7 @@ Text editor selection is synced with the graphical editor, if possible.
 These also work in the text editor.
 
 ## Tools
+
 **X** to delete the selected objects.
 
 **G** to translate the selected objects. Left click to confirm, right click to cancel.
@@ -117,3 +118,27 @@ These also work in the text editor.
 
 ## Misc
 **Control + Alt + I** to print some debug info to standard output. This will likely be replaced in the future by a more user-friendly logging system.
+
+# For developers
+
+This project uses maven. (ever since the modernize update)
+
+## Build
+
+```sh
+mvn package
+```
+
+## Run
+
+```
+java -jar target/fcorbit*.jar
+```
+
+Or just open the jar directly. (double-click open)
+
+## Versioning
+
+We have auto version bump set up with GitHub Actions. Every PR will, by default, bump the patch version.
+
+You can override this with the `version:major` or `version:minor` labels on your PR.
