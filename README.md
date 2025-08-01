@@ -109,8 +109,11 @@ These also work in the text editor.
 * Grid snapping by holding **Control** is planned for a future update.
 * Fine movement by holding **Shift** is planned for a future update.
 
+<<<<<<< HEAD
 ## Misc
 **Control + Alt + I** to print some debug info to standard output. This will likely be replaced in the future by a more user-friendly logging system.
+=======
+>>>>>>> origin/modernize
 # For developers
 
 This project uses maven. (ever since the modernize update)
