@@ -101,6 +101,7 @@ Text editor selection is synced with the graphical editor, if possible.
 These also work in the text editor.
 
 ## Tools
+
 **X** to delete the selected objects.
 
 **G** to translate the selected objects. Left click to confirm, right click to cancel.
