@@ -101,7 +101,6 @@ Text editor selection is synced with the graphical editor, if possible.
 These also work in the text editor.
 
 ## Tools
-
 **X** to delete the selected objects.
 
 **G** to translate the selected objects. Left click to confirm, right click to cancel.
@@ -109,3 +108,6 @@ These also work in the text editor.
 * **Y** to translate only on the y-axis. Toggles between no axis lock, global y-axis lock, and local y-axis lock.
 * Grid snapping by holding **Control** is planned for a future update.
 * Fine movement by holding **Shift** is planned for a future update.
+
+## Misc
+**Control + Alt + I** to print some debug info to standard output. This will likely be replaced in the future by a more user-friendly logging system.
