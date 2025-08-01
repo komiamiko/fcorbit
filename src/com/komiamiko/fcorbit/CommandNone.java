@@ -76,7 +76,7 @@ public class CommandNone implements ActiveCommand{
 					view.repaint();
 				}
 			}else{
-				int mx = e.getX(), my = e.getY();
+				int mx = view.originMousex, my = view.originMousey;
 				FCObj sel = view.getSelectionPoint(mx,my);
 				if(sel!=null){// Something will be selected
 					int line = sel.getLineNumber();
@@ -116,6 +116,10 @@ public class CommandNone implements ActiveCommand{
 			break;
 		}
 		case 1:{
+			// if it didn't meet the drag threshold, don't update
+			if(!view.mouseDragged) {
+				break;
+			}
 			// Selection preview
 			view.restoreBackupSel();
 			boolean shift = view.keys.get(KeyEvent.VK_SHIFT);
