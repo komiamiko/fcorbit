@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 
 public class CommandRotate implements ActiveCommand {
 
@@ -20,8 +22,6 @@ public class CommandRotate implements ActiveCommand {
     public FCObj[] backupDoc;
     public int initialx;
     public int initialy;
-    public int viewPivotx;
-    public int viewPivoty;
 
     /**
      * Affects how rotation will be calculated when multiple objects are involved.
@@ -36,8 +36,6 @@ public class CommandRotate implements ActiveCommand {
         this.view = view;
         initialx = view.lastMousex;
         initialy = view.lastMousey;
-        viewPivotx = view.getWidth() / 2;
-        viewPivoty = view.getHeight() / 2;
         backupDoc = new FCObj[view.objSel.cardinality()];
         for(int i = view.objSel.nextSetBit(0), j = 0; i >= 0; i = view.objSel.nextSetBit(i+1), ++j) {
             FCObj obj = (FCObj)view.objDoc.get(i);
@@ -61,7 +59,35 @@ public class CommandRotate implements ActiveCommand {
 
     @Override
     public void render(Graphics2D g) {
-        // TODO
+        // compute values
+        double[] stats = getRotationStatistics();
+        final double screenPivotX = stats[2];
+        final double screenPivotY = stats[3];
+        // setup render
+        g.setColor(GraphicEditorPane.AXISXY);
+        g.setStroke(new BasicStroke(1));
+        // draw lines
+        double radius = Math.max(100, Math.hypot(initialx - screenPivotX, initialy - screenPivotY));
+        g.draw(new Ellipse2D.Double(screenPivotX - radius, screenPivotY - radius, radius * 2, radius * 2));
+        double px;
+        double py;
+        double pmult;
+        px = initialx;
+        py = initialy;
+        px -= screenPivotX;
+        py -= screenPivotY;
+        pmult = radius / Math.max(1, Math.hypot(px, py));
+        px = px * pmult + screenPivotX;
+        py = py * pmult + screenPivotY;
+        g.draw(new Line2D.Double(screenPivotX, screenPivotY, px, py));
+        px = view.lastMousex;
+        py = view.lastMousey;
+        px -= screenPivotX;
+        py -= screenPivotY;
+        pmult = radius / Math.max(1, Math.hypot(px, py));
+        px = px * pmult + screenPivotX;
+        py = py * pmult + screenPivotY;
+        g.draw(new Line2D.Double(screenPivotX, screenPivotY, px, py));
     }
 
     @Override
@@ -82,6 +108,8 @@ public class CommandRotate implements ActiveCommand {
             case KeyEvent.VK_PERIOD:{
                 pivotMode++;
                 pivotMode %= 4;
+                updateMove();
+                view.repaint();
             }
         }
     }
@@ -127,7 +155,7 @@ public class CommandRotate implements ActiveCommand {
     @Override
     public void mouseMoved(MouseEvent mouseEvent) {
         // Do movement
-        updateMove(mouseEvent.getX(),mouseEvent.getY());
+        updateMove();
         view.repaint();
     }
 
@@ -135,18 +163,32 @@ public class CommandRotate implements ActiveCommand {
     public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
     }
 
-    private void updateMove(int x, int y) {
+    private void updateMove() {
         restoreBackupDoc();
-        double initialAngle = Math.atan2(initialy - viewPivoty, initialx - viewPivotx);
-        double finalAngle = Math.atan2(y - viewPivoty, x - viewPivotx);
-        double angleDiffRadians = finalAngle - initialAngle;
-        double angleDiffDegrees = Math.toDegrees(angleDiffRadians);
-        if(angleDiffDegrees > 180) {
-            angleDiffDegrees -= 360;
+        double[] stats = getRotationStatistics();
+        final double allpivotx = stats[0];
+        final double allpivoty = stats[1];
+        final double angleDiffRadians = stats[6];
+        final double angleDiffDegrees = stats[7];
+        double c = Math.cos(angleDiffRadians);
+        double s = Math.sin(angleDiffRadians);
+        for(int i = view.objSel.nextSetBit(0), j = 0; i >= 0; i = view.objSel.nextSetBit(i+1), ++j) {
+            FCObj obj = (FCObj)view.objDoc.get(i);
+            obj.r += angleDiffDegrees;
+            if(pivotMode != PIVOT_INDIVIDUAL) {
+                double dx = obj.x - allpivotx;
+                double dy = obj.y - allpivoty;
+                obj.x = allpivotx + dx * c - dy * s;
+                obj.y = allpivoty + dx * s + dy * c;
+            }
         }
-        if(angleDiffDegrees < -180) {
-            angleDiffDegrees += 360;
-        }
+    }
+
+    /*
+     * world x, world y, screen x, screen y, initial angle, final angle, angle diff radians, angle diff degrees
+     */
+    private double[] getRotationStatistics() {
+        // calculate pivot in world
         int objcount = 0;
         double allpivotx = 0;
         double allpivoty = 0;
@@ -164,17 +206,21 @@ public class CommandRotate implements ActiveCommand {
         }
         allpivotx /= Math.max(1, objcount);
         allpivoty /= Math.max(1, objcount);
-        double c = Math.cos(angleDiffRadians);
-        double s = Math.sin(angleDiffRadians);
-        for(int i = view.objSel.nextSetBit(0), j = 0; i >= 0; i = view.objSel.nextSetBit(i+1), ++j) {
-            FCObj obj = (FCObj)view.objDoc.get(i);
-            obj.r += angleDiffDegrees;
-            if(pivotMode != PIVOT_INDIVIDUAL) {
-                double dx = obj.x - allpivotx;
-                double dy = obj.y - allpivoty;
-                obj.x = allpivotx + dx * c - dy * s;
-                obj.y = allpivoty + dx * s + dy * c;
-            }
+        // calculate pivot on screen
+        double[] viewPivot = view.coordinateWorldToScreen(new double[]{allpivotx, allpivoty});
+        final double viewPivotx = viewPivot[0];
+        final double viewPivoty = viewPivot[1];
+        // calculate angle
+        double initialAngle = Math.atan2(initialy - viewPivoty, initialx - viewPivotx);
+        double finalAngle = Math.atan2(view.lastMousey - viewPivoty, view.lastMousex - viewPivotx);
+        double angleDiffRadians = finalAngle - initialAngle;
+        double angleDiffDegrees = Math.toDegrees(angleDiffRadians);
+        if(angleDiffDegrees > 180) {
+            angleDiffDegrees -= 360;
         }
+        if(angleDiffDegrees < -180) {
+            angleDiffDegrees += 360;
+        }
+        return new double[]{allpivotx, allpivoty, viewPivotx, viewPivoty, initialAngle, finalAngle, angleDiffRadians, angleDiffDegrees};
     }
 }
