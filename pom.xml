@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.komiamiko</groupId>
     <artifactId>fcorbit</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-patch</version>
     <packaging>jar</packaging>
     <name>FC Orbit</name>
     <description>Editor for Fantastic Contraption</description>
