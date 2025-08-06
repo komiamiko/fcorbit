@@ -109,11 +109,29 @@ public class CommandRotate implements ActiveCommand {
     @Override
     public void mouseMoved(MouseEvent mouseEvent) {
         // Do movement
-        //updateMove(mouseEvent.getX(),mouseEvent.getY());
+        updateMove(mouseEvent.getX(),mouseEvent.getY());
         view.repaint();
     }
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
+    }
+
+    private void updateMove(int x, int y) {
+        restoreBackupDoc();
+        double initialAngle = Math.atan2(initialy - viewPivoty, initialx - viewPivotx);
+        double finalAngle = Math.atan2(y - viewPivoty, x - viewPivotx);
+        double angleDiffRadians = finalAngle - initialAngle;
+        double angleDiffDegrees = Math.toDegrees(angleDiffRadians);
+        if(angleDiffDegrees > 180) {
+            angleDiffDegrees -= 360;
+        }
+        if(angleDiffDegrees < -180) {
+            angleDiffDegrees += 360;
+        }
+        for(int i = view.objSel.nextSetBit(0), j = 0; i >= 0; i = view.objSel.nextSetBit(i+1), ++j) {
+            FCObj obj = (FCObj)view.objDoc.get(i);
+            obj.r += angleDiffDegrees;
+        }
     }
 }
