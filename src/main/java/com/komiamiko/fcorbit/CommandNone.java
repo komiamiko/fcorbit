@@ -264,6 +264,13 @@ public class CommandNone implements ActiveCommand{
 			}
 			break;
 		}
+			case KeyEvent.VK_R:{
+				// Rotate selection
+				if(view.objSel.cardinality()>0){
+					view.setCommand(new CommandRotate(view));
+				}
+				break;
+			}
 		case KeyEvent.VK_I:{
 			if(ctrl&&alt) { // Debug report
 				Main.debugReport();

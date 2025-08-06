@@ -116,6 +116,9 @@ These also work in the text editor.
 * Grid snapping by holding **Control** is planned for a future update.
 * Fine movement by holding **Shift** is planned for a future update.
 
+**R** to rotate the selected objects. Left click to confirm, right click to cancel.
+* **.** to cycle through the different pivot modes: group average, first, world origin, individual origins.
+
 ## Misc
 **Control + Alt + I** to print some debug info to standard output. This will likely be replaced in the future by a more user-friendly logging system.
 

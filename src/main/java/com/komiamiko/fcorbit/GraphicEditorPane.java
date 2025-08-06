@@ -158,6 +158,14 @@ public class GraphicEditorPane extends JPanel implements KeyTracker {
 	public void init(){
 		
 	}
+
+	public double[] coordinateWorldToScreen(double[] point) {
+		double cx = getWidth()*0.5, cy = getHeight()*0.5;
+		double scale = getScale();
+		double anchorx = this.anchorx;
+		double anchory = this.anchory;
+		return new double[]{(point[0] - anchorx) * scale + cx, (point[1] - anchory) * scale + cy};
+	}
 	
 	@Override
 	public void paint(Graphics og){
