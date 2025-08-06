@@ -9,6 +9,11 @@ import java.awt.event.MouseWheelEvent;
 
 public class CommandRotate implements ActiveCommand {
 
+    public static final int PIVOT_AVERAGE = 0;
+    public static final int PIVOT_FIRST = 1;
+    public static final int PIVOT_WORLD_ORIGIN = 2;
+    public static final int PIVOT_INDIVIDUAL = 3;
+
     public final GraphicEditorPane view;
 
     public boolean done = false;
@@ -17,6 +22,15 @@ public class CommandRotate implements ActiveCommand {
     public int initialy;
     public int viewPivotx;
     public int viewPivoty;
+
+    /**
+     * Affects how rotation will be calculated when multiple objects are involved.
+     * 0 = average of objects' positions (default)
+     * 1 = first object's position
+     * 2 = world origin
+     * 3 = individual origins
+     */
+    public int pivotMode;
 
     public CommandRotate(GraphicEditorPane view){
         this.view = view;
@@ -64,6 +78,10 @@ public class CommandRotate implements ActiveCommand {
             case KeyEvent.VK_ESCAPE:{
                 view.cancelCommand();
                 break;
+            }
+            case KeyEvent.VK_PERIOD:{
+                pivotMode++;
+                pivotMode %= 4;
             }
         }
     }
@@ -129,9 +147,34 @@ public class CommandRotate implements ActiveCommand {
         if(angleDiffDegrees < -180) {
             angleDiffDegrees += 360;
         }
+        int objcount = 0;
+        double allpivotx = 0;
+        double allpivoty = 0;
+        for(int i = view.objSel.nextSetBit(0), j = 0; i >= 0; i = view.objSel.nextSetBit(i+1), ++j) {
+            if(pivotMode == PIVOT_WORLD_ORIGIN) {
+                break;
+            }
+            FCObj obj = (FCObj)view.objDoc.get(i);
+            objcount++;
+            allpivotx += obj.x;
+            allpivoty += obj.y;
+            if(pivotMode == PIVOT_FIRST) {
+                break;
+            }
+        }
+        allpivotx /= Math.max(1, objcount);
+        allpivoty /= Math.max(1, objcount);
+        double c = Math.cos(angleDiffRadians);
+        double s = Math.sin(angleDiffRadians);
         for(int i = view.objSel.nextSetBit(0), j = 0; i >= 0; i = view.objSel.nextSetBit(i+1), ++j) {
             FCObj obj = (FCObj)view.objDoc.get(i);
             obj.r += angleDiffDegrees;
+            if(pivotMode != PIVOT_INDIVIDUAL) {
+                double dx = obj.x - allpivotx;
+                double dy = obj.y - allpivoty;
+                obj.x = allpivotx + dx * c - dy * s;
+                obj.y = allpivoty + dx * s + dy * c;
+            }
         }
     }
 }
