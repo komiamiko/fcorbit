@@ -52,56 +52,68 @@ public class CommandRotate implements ActiveCommand {
 
     @Override
     public void keyTyped(KeyEvent keyEvent) {
-        // TODO
     }
 
     @Override
     public void keyPressed(KeyEvent keyEvent) {
-        // TODO
     }
 
     @Override
     public void keyReleased(KeyEvent keyEvent) {
-        // TODO
+        switch(keyEvent.getKeyCode()){
+            case KeyEvent.VK_ESCAPE:{
+                view.cancelCommand();
+                break;
+            }
+        }
     }
 
     @Override
     public void mouseClicked(MouseEvent mouseEvent) {
-        // TODO
     }
 
     @Override
     public void mousePressed(MouseEvent mouseEvent) {
-        // TODO
     }
 
     @Override
     public void mouseReleased(MouseEvent mouseEvent) {
-        // TODO
+        switch(view.mouseDown){
+            case 1:{
+                // Left click to confirm
+                done=true;
+                Main.updateTextFromObj();
+                view.cancelCommand();
+                break;
+            }
+            case 3:{
+                // Right click to cancel
+                view.cancelCommand();
+                break;
+            }
+        }
     }
 
     @Override
     public void mouseEntered(MouseEvent mouseEvent) {
-        // TODO
     }
 
     @Override
     public void mouseExited(MouseEvent mouseEvent) {
-        // TODO
     }
 
     @Override
     public void mouseDragged(MouseEvent mouseEvent) {
-        // TODO
     }
 
     @Override
     public void mouseMoved(MouseEvent mouseEvent) {
-        // TODO
+        // Do movement
+        //updateMove(mouseEvent.getX(),mouseEvent.getY());
+        view.repaint();
     }
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
-        // TODO
     }
 }
